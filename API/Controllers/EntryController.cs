@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers {
+    
     [Route("api/DNSEntry")]
     [ApiController]
     public class EntryController : ControllerBase
