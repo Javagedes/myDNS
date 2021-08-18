@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
+import MainView from './components/mainView';
 
 class App extends Component {
 
@@ -9,6 +10,7 @@ class App extends Component {
     entries: []
   }
 
+  //TODO: Change pulling the information from db to only happen once. It currently happens every time someone loads the website
   componentDidMount() {
     console.log("We called this function")
     axios.get('https://localhost:5001/api/DNSEntry').then((response) => {
@@ -23,12 +25,9 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h3>List of DNS Entries</h3>
-          <ul>
-            {this.state.entries.map((entry:any) => (
-              <li key="{entry.id}" >{ entry.hostName } - {entry.type} - {entry.value} </li>
-            ))}
-          </ul>
+          
+          <MainView/>
+
         </header>
       </div>
     );
