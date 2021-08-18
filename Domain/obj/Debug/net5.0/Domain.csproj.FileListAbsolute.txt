@@ -1,0 +1,12 @@
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\bin\Debug\net5.0\Domain.deps.json
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\bin\Debug\net5.0\Domain.dll
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\bin\Debug\net5.0\ref\Domain.dll
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\bin\Debug\net5.0\Domain.pdb
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.csproj.AssemblyReference.cache
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.AssemblyInfoInputs.cache
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.AssemblyInfo.cs
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.csproj.CoreCompileInputs.cache
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.dll
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\ref\Domain.dll
+C:\Users\joeyv\Desktop\Projects\myDNS\Domain\obj\Debug\net5.0\Domain.pdb
