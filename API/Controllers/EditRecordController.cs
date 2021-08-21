@@ -30,8 +30,9 @@ namespace API.Controllers {
             DNSEntry entry;
             entry = await _Cache.Get(_Context, item);
             
-            if(entry == null)
+            if(entry == default)
             {
+                System.Console.WriteLine("We are here!");
                 return new EmptyResult();
             }
             
@@ -97,7 +98,15 @@ namespace API.Controllers {
                 SizeLimit = 1024
             });
 
-            List<DNSEntry> entries = context.Entries.ToList();
+            foreach (DNSEntry entry in context.Entries.ToList())
+            {
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSize(1)
+                    .SetAbsoluteExpiration(System.TimeSpan.FromSeconds(entry.TTL));
+                     
+                     DNSEntryLookupItem key = new DNSEntryLookupItem(entry.HostName, entry.Type);
+                    _Cache.Set(key, entry, cacheEntryOptions);
+            }
         }
 
 
@@ -111,27 +120,28 @@ namespace API.Controllers {
         public async Task<DNSEntry> Get(DataContext context, DNSEntryLookupItem item)
         {
             DNSEntry cacheEntry;
-            if(!_Cache.TryGetValue(item.HostName, out cacheEntry))
+
+            if(!_Cache.TryGetValue(item, out cacheEntry))
             {   
+                System.Console.WriteLine("Could not find the item in cache");
                 try 
                 {
-                    cacheEntry = await context.Entries.SingleAsync(table => table.HostName == item.HostName && table.Type == item.Type);
+                    cacheEntry = await context.Entries.SingleOrDefaultAsync(table => table.HostName == item.HostName && table.Type == item.Type);
                 }
                 catch
                 {
-                    //TODO: Single can throw an exception if it finds none or more than one.
-                    // Not sure if I want to handle for both errors, or just use SingleOrDefault() which returns Null;
-                    // There should only ever be one entry. key-word is should... realistically I should handle
-                    // For the edge case.
+                    //TODO: Will throw an exception if it finds more than one matching record.
+                    // Need to handle that exception here.
+                    cacheEntry = null;
                 }
                 
-                //Add the entry into the cache
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                if (cacheEntry != null) 
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSize(1)
                     .SetAbsoluteExpiration(System.TimeSpan.FromSeconds(cacheEntry.TTL));
-                
-                _Cache.Set(cacheEntry.HostName, cacheEntry, cacheEntryOptions);
-                
+                    _Cache.Set(cacheEntry.HostName, cacheEntry, cacheEntryOptions);
+                }   
             }
             return cacheEntry;
         }
@@ -151,5 +161,11 @@ namespace API.Controllers {
     {   
         public string HostName  { get; set; }
         public string Type      { get; set; }
+
+        public DNSEntryLookupItem(string HostName, string Type)
+        {
+            this.HostName = HostName;
+            this.Type = Type;
+        }
     }
 }
