@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Domain;
@@ -15,17 +16,26 @@ namespace API.Controllers {
     public class EditRecordController : ControllerBase
     {
         private readonly DataContext _Context;
+        private Cache _Cache;
         public EditRecordController(DataContext context)
         {
             _Context = context;
+            _Cache = new Cache(_Context);
         }
 
         //A Request to get all entries
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DNSEntry>>> Get()
+        public async Task<ActionResult<DNSEntry>> Get([FromBody] DNSEntryLookupItem item)
         {
-            var values = await _Context.Entries.ToListAsync();
-            return Ok(values);
+            DNSEntry entry;
+            entry = await _Cache.Get(_Context, item);
+            
+            if(entry == null)
+            {
+                return new EmptyResult();
+            }
+            
+            return Ok(entry);
         }
 
         //A Request to add an entry
@@ -76,10 +86,9 @@ namespace API.Controllers {
         }
     }
 
-    public class Cache<TItem>
+    public class Cache
     {
         private MemoryCache _Cache; 
-        private readonly DataContext _Context;
 
         public Cache(DataContext context)
         {
@@ -87,32 +96,60 @@ namespace API.Controllers {
             {
                 SizeLimit = 1024
             });
-            _Context = context;
+
+            List<DNSEntry> entries = context.Entries.ToList();
         }
 
 
-        //Attempts to get the item. If it does not exist in cache, it attempts
-        //to get it from the database. If it doesn't get it there, it throws an
-        //error
-        public void Get(object key)
+        /*
+            This function queries the Entries database for a DNSEntry that has the correct Hostname and correct 
+                entry value type (A, AAAA, etc);
+            This function will return the matching DNSEntry, if found. Currently, if it is not found, or 
+                multiple entries are found, it will return a null value. 
+            When using this function, you must check for null!
+        */
+        public async Task<DNSEntry> Get(DataContext context, DNSEntryLookupItem item)
         {
-            TItem CacheEntry;
-            if(!_Cache.TryGetValue(key, out CacheEntry))
-            {
-                //Call Database to get the entry
+            DNSEntry cacheEntry;
+            if(!_Cache.TryGetValue(item.HostName, out cacheEntry))
+            {   
+                try 
+                {
+                    cacheEntry = await context.Entries.SingleAsync(table => table.HostName == item.HostName && table.Type == item.Type);
+                }
+                catch
+                {
+                    //TODO: Single can throw an exception if it finds none or more than one.
+                    // Not sure if I want to handle for both errors, or just use SingleOrDefault() which returns Null;
+                    // There should only ever be one entry. key-word is should... realistically I should handle
+                    // For the edge case.
+                }
+                
                 //Add the entry into the cache
-                //Return the object
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSize(1)
+                    .SetAbsoluteExpiration(System.TimeSpan.FromSeconds(cacheEntry.TTL));
+                
+                _Cache.Set(cacheEntry.HostName, cacheEntry, cacheEntryOptions);
+                
             }
+            return cacheEntry;
         }
 
-        public void Remove(object key)
+        public void Remove(string hostName)
         {
 
         }
 
-        public void Add(TItem item) 
+        public void Add(DNSEntry item) 
         {
 
         }
+    }
+
+    public class DNSEntryLookupItem
+    {   
+        public string HostName  { get; set; }
+        public string Type      { get; set; }
     }
 }
