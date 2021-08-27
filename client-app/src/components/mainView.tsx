@@ -1,18 +1,44 @@
 import React, { Component } from "react";
-import Card from 'react-bootstrap/Card';
 import RequestView from "./requestView";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import operation from "../types/operation";
+import Operation from "../types/Operation";
 
 class MainView extends Component {
+    apiGetCall = async () => {
+        console.log("It was called")
+
+        let response = await fetch('http://localhost:5000/api/editrecord/hostname=www.joy.com&type=A')
+            .then(response => response.json())
+
+        return response["hostName"]
     
-    list: Array<operation> = [
-        {title: "Retrieve DNS Entry", action: "Retrieve", result_placeholder: "Output"},
-        {title: "Add DNS Entry", action: "Add", result_placeholder: "Output"},
-        {title: "Remove DNS Entry", action: "Remove", result_placeholder: "Output"}
-    ];
+    }
+
+    apiPostCall = async () => {
+        console.log("It was called")
+
+        let response = await fetch('http://localhost:5000/api/editrecord/hostname=www.joy.com&type=A')
+            .then(response => response.json())
+
+        return response["hostName"]
+    }
+
+    apiDeleteCall = async () => {
+        console.log("It was called")
+
+        let response = await fetch('http://localhost:5000/api/editrecord/hostname=www.joy.com&type=A')
+            .then(response => response.json())
+
+        return response["hostName"]
+    }
+
+    list: Array<Operation> = [
+        new Operation("Retrieve DNS Entry", "Retrieve", "Output", this.apiGetCall),
+        new Operation("Add DNS Entry", "Add", "Output", this.apiPostCall),
+        new Operation("Remove DNS Entry", "Remove", "Output", this.apiDeleteCall)
+    ]
     
     render() {
 
@@ -21,9 +47,9 @@ class MainView extends Component {
         return(
             <Container>  
                 <Row>
-                    {this.list.map((op:operation) => (
+                    {this.list.map((op: Operation) => (
                         <Col>
-                            <RequestView title = {op.title} action = {op.action} result_placeholder = {op.result_placeholder}/>
+                            <RequestView op = {op} />
                         </Col>
                     ))}
                 </Row>
@@ -31,6 +57,10 @@ class MainView extends Component {
             </Container>
         )
     }
+    
+    
 }
+
+
 
 export default MainView;

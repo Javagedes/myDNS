@@ -10,17 +10,6 @@ class App extends Component {
     entries: []
   }
 
-  //TODO: Change pulling the information from db to only happen once. It currently happens every time someone loads the website
-  componentDidMount() {
-    console.log("We called this function")
-    axios.get('https://localhost:5001/api/DNSEntry').then((response) => {
-      this.setState({
-        entries: response.data
-      })
-      console.log(response.data)
-    })
-  }
-
   render() {
     return (
       <div className="App">
