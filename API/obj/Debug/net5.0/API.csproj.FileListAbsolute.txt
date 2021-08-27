@@ -59,3 +59,4 @@ C:\Users\joeyv\Desktop\Projects\myDNS\API\obj\Debug\net5.0\API.dll
 C:\Users\joeyv\Desktop\Projects\myDNS\API\obj\Debug\net5.0\ref\API.dll
 C:\Users\joeyv\Desktop\Projects\myDNS\API\obj\Debug\net5.0\API.pdb
 C:\Users\joeyv\Desktop\Projects\myDNS\API\obj\Debug\net5.0\API.genruntimeconfig.cache
+C:\Users\joeyv\Desktop\Projects\myDNS\API\bin\Debug\net5.0\Newtonsoft.Json.dll
