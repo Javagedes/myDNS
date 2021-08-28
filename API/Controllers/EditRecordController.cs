@@ -13,6 +13,7 @@ using System.Web;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
 
+//TODO: Add logging
 namespace API.Controllers {
     
     [Route("api/editrecord")]
@@ -41,24 +42,22 @@ namespace API.Controllers {
         }
 
         //A Request to get an entry
-        [HttpGet]
-        public async Task<ActionResult<DNSEntry>> Get([FromBody] LookupKey lookupKey)
+        [HttpGet("hostname={hostName}&type={type}")]
+        public async Task<ActionResult<DNSEntry>> Get(string hostName, string type)
         {
             DNSEntry record;
+            LookupKey lookupKey = new LookupKey(hostName, type);
 
             if(!_Cache.TryGetValue(lookupKey.ToString(), out record))
-            {
-                System.Console.WriteLine("Key was not in cache");
-                
+            {                
                 try 
                 {
+                    //Record can get set to null here too
                     record = await _Context.Entries
                         .SingleOrDefaultAsync(table => table.HostName == lookupKey.HostName && table.Type == lookupKey.Type);
                 }
                 catch
                 {
-                    //TODO: Will throw an exception if it finds more than one matching record.
-                    // Need to handle that exception here.
                     record = null;
                 }     
 
@@ -78,56 +77,55 @@ namespace API.Controllers {
             }
             else
             {
-                return new EmptyResult();
+                return NotFound();
             }  
         }
 
         //A Request to add an entry
+        //Disabling this warning as Ok() & StatusCode() require Async,
+        //But the Compiler is still throwing a warning that
+        //I don't technically need Async
         [HttpPost]
-        public async Task<HttpResponseMessage> Post([FromBody] DNSEntry entry)
-        {
-            HttpResponseMessage returnMessage = new HttpResponseMessage();
-            
-            try {
-
+        #pragma warning disable 1998
+        public async Task<ActionResult> Post([FromBody] DNSEntry entry)
+        {      
+            try 
+            {
                 _Context.Entries.Add(entry);
                 _Context.SaveChanges();
-                string message = ($"Entry Created - {entry.HostName}");
-                returnMessage = new HttpResponseMessage(HttpStatusCode.Created);
-                returnMessage.RequestMessage = new HttpRequestMessage(HttpMethod.Post, message);
+                return Ok();
             }
-            //TODO: Look into other possible errors
             catch
             {
-                returnMessage = new HttpResponseMessage(HttpStatusCode.ExpectationFailed);
-                returnMessage.RequestMessage = new HttpRequestMessage(HttpMethod.Post, "Entry Already Exists");
+                //Conflict status code
+                return StatusCode(409);
             }
-
-            return await Task.FromResult(returnMessage);
         }
-
+        #pragma warning restore 1998
+       
         [HttpDelete]
-        public async Task<HttpResponseMessage> Delete([FromBody] LookupKey lookupKey)
-        {
-            HttpResponseMessage returnMessage=new HttpResponseMessage();
-            
+        public async Task<ActionResult> Delete([FromBody] LookupKey lookupKey)
+        { 
             _Cache.Remove(lookupKey.ToString());
 
             DNSEntry record = await _Context.Entries
-                        .SingleOrDefaultAsync(table => table.HostName == lookupKey.HostName && table.Type == lookupKey.Type);
+                        .FirstOrDefaultAsync(table => table.HostName == lookupKey.HostName && table.Type == lookupKey.Type);
 
             if (record == null)
             {
-                returnMessage = new HttpResponseMessage(HttpStatusCode.ExpectationFailed);
-                returnMessage.RequestMessage = new HttpRequestMessage(HttpMethod.Post, "Entry Does not Exist");
-                return await Task.FromResult(returnMessage);
+                return NotFound();
+            }
+            try 
+            {
+                _Context.Entries.Remove(record);
+                _Context.SaveChanges();
+                return Ok();
+            }
+            catch
+            {
+                return NotFound();
             }
             
-            _Context.Entries.Remove(record);
-             _Context.SaveChanges();
-            string message = ($"{record.HostName} Removed.");
-            returnMessage = new HttpResponseMessage(HttpStatusCode.OK);
-            return await Task.FromResult(returnMessage);
         }
     } 
 

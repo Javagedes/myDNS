@@ -38,9 +38,9 @@ namespace API
             });
 
             services.AddCors(op => {
-                op.AddPolicy("CorsPolicy", policy=> {
+                op.AddPolicy(name: "CorsPolicy", policy=> {
                     policy.AllowAnyHeader().AllowAnyMethod()
-                        .WithOrigins("http://localhost:3000", "http://localhost:5000", "http://localhost:5001")
+                        .WithOrigins("*")
                         .WithMethods("PUT", "DELETE", "GET");
                 });
             });

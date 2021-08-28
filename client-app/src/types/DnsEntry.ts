@@ -6,7 +6,7 @@ export default class DnsEntry
     type: string
     value: string
 
-    constructor(id: string, hostName: string, host: string, ttl: string, type: string, value: string)
+    constructor(id: string, hostName: string, ttl: string, type: string, value: string)
     {
         this.id = id;
         this.hostName = hostName;

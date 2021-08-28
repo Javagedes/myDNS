@@ -5,42 +5,30 @@ import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Card from 'react-bootstrap/Card';
-import Operation from "../types/Operation";
-import { match } from "minimatch";
 
-
-
-type Props = {
-    op: Operation;
-}
-class RequestView extends Component<Props> {
+class ApiGetView extends Component {
     state = {
-        result: "Results",
+        result: "Entry Value",
         url: "Not Set",
         type: 0
     }
 
     apiGetCall = async () => {
-        console.log("It was called")
+        let type = "";
 
-        let type = "0";
+        if (Number(this.state.type) === 1)type = "A"
+        else if (Number(this.state.type) === 2)type = "AAAA"
 
-        if (Number(this.state.type) === 1) {
-            type = "A"
-        }
-        else if (Number(this.state.type) === 2) {
-            type = "AAAA"
-        }
-
-        console.log(this.state.type)
-
-        //TODO Catch bad JSON Parse
         let response = await fetch(`http://localhost:5000/api/editrecord/hostname=${this.state.url}&type=${type}`)
-            .then(response => response.json())
+            .then(response => {
+                if (response.ok === true) 
+                {
+                    return response.json().then(data => data["value"]);
+                }
+                else return `${this.state.url} could not be found`;
+            });
 
-        //TODO edit the form to show all pieces of important data
-        return response["hostName"]
-    
+        return response
     }
 
     render() {
@@ -63,8 +51,8 @@ class RequestView extends Component<Props> {
                                     onChange={e=> this.setState({url: e.target.value})} 
                                     placeholder="Enter URL" />
                             </Col>
+                            
                             <Col sm={5}>
-                                
                                 <Form.Select aria-label="Default select example"
                                     onChange={e => this.setState({type: (e.target as HTMLFormElement).value})} >
                                     <option>Record Entry</option>
@@ -79,11 +67,11 @@ class RequestView extends Component<Props> {
                                 </div>
                                         
                                 <Row> 
-                                    " "
+                                " "
                                 </Row>
 
                                 <div className="d-grid gap-2">
-                                <Form.Control type="text" placeholder = "Results" value={this.state.result}/>
+                                <Form.Control readOnly type="text"  value={this.state.result}/>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -92,4 +80,4 @@ class RequestView extends Component<Props> {
     }
 }
 
-export default RequestView;
+export default ApiGetView;
